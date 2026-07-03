@@ -16,6 +16,11 @@ export function AddCredentialForm() {
     return addYearsISO(issueDate, preset.renewalYears);
   }, [issueDate, preset]);
 
+  // ISO date strings compare correctly as plain strings.
+  const effectiveExpiration = expirationOverride || autoExpiration;
+  const invalidDates =
+    issueDate !== "" && effectiveExpiration !== "" && effectiveExpiration <= issueDate;
+
   return (
     <form
       action={addCredential}
@@ -70,9 +75,11 @@ export function AddCredentialForm() {
           <input
             name="expiration_date"
             type="date"
-            value={expirationOverride || autoExpiration}
+            value={effectiveExpiration}
             onChange={(e) => setExpirationOverride(e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-sky-500"
+            className={`mt-1 w-full rounded-md border bg-slate-950 px-3 py-2 text-white outline-none focus:border-sky-500 ${
+              invalidDates ? "border-red-700" : "border-slate-700"
+            }`}
           />
           {autoExpiration && !expirationOverride && (
             <span className="mt-1 block text-xs text-slate-500">
@@ -82,9 +89,16 @@ export function AddCredentialForm() {
         </label>
       </div>
 
+      {invalidDates && (
+        <p className="rounded-md bg-red-950 px-3 py-2 text-sm text-red-300">
+          Invalid dates — the expiration date must be after the issue date.
+        </p>
+      )}
+
       <button
         type="submit"
-        className="w-full rounded-md bg-sky-600 px-4 py-2 font-medium text-white hover:bg-sky-500"
+        disabled={invalidDates}
+        className="w-full rounded-md bg-sky-600 px-4 py-2 font-medium text-white hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
       >
         Add credential
       </button>

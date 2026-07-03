@@ -24,6 +24,12 @@ export async function addCredential(formData: FormData) {
     expirationDate = addYearsISO(issueDate, preset.renewalYears);
   }
 
+  // The form checks this client-side too; this is the authoritative check.
+  // ISO date strings (YYYY-MM-DD) compare correctly as plain strings.
+  if (issueDate && expirationDate && expirationDate <= issueDate) {
+    redirect(`/dashboard?error=${encodeURIComponent("Invalid dates — the expiration date must be after the issue date.")}`);
+  }
+
   const { error } = await supabase.from("credentials").insert({
     user_id: user.id,
     credential_type: typeSlug,
