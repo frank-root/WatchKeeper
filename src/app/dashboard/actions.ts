@@ -5,7 +5,11 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { addYearsISO, getPreset, normalizePhone } from "@/lib/credentials";
 
-export async function addCredential(formData: FormData) {
+export type AddCredentialResult = { error: string } | { success: string };
+
+// Returns a result instead of redirecting so the form can clear itself and
+// show a success flash without a page round trip.
+export async function addCredential(formData: FormData): Promise<AddCredentialResult> {
   const supabase = await createClient();
 
   const {
@@ -27,7 +31,7 @@ export async function addCredential(formData: FormData) {
   // The form checks this client-side too; this is the authoritative check.
   // ISO date strings (YYYY-MM-DD) compare correctly as plain strings.
   if (issueDate && expirationDate && expirationDate <= issueDate) {
-    redirect(`/dashboard?error=${encodeURIComponent("Invalid dates — the expiration date must be after the issue date.")}`);
+    return { error: "Invalid dates — the expiration date must be after the issue date." };
   }
 
   const { error } = await supabase.from("credentials").insert({
@@ -39,10 +43,16 @@ export async function addCredential(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/dashboard?error=${encodeURIComponent(error.message)}`);
+    return { error: error.message };
   }
 
   revalidatePath("/dashboard");
+
+  return {
+    success: expirationDate
+      ? `${name} added — we'll email you 90, 60, and 30 days before ${expirationDate}.`
+      : `${name} added — ongoing compliance, no expiration to track.`,
+  };
 }
 
 export async function updateSmsSettings(formData: FormData) {

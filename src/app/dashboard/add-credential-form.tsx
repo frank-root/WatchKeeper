@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { CREDENTIAL_PRESETS, addYearsISO, getPreset } from "@/lib/credentials";
 import { addCredential } from "./actions";
 
@@ -8,6 +8,9 @@ export function AddCredentialForm() {
   const [typeSlug, setTypeSlug] = useState("mmc");
   const [issueDate, setIssueDate] = useState("");
   const [expirationOverride, setExpirationOverride] = useState("");
+  const [flash, setFlash] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const preset = getPreset(typeSlug);
 
@@ -21,12 +24,41 @@ export function AddCredentialForm() {
   const invalidDates =
     issueDate !== "" && effectiveExpiration !== "" && effectiveExpiration <= issueDate;
 
+  async function handleAction(formData: FormData) {
+    const result = await addCredential(formData);
+
+    if ("error" in result) {
+      setFlash(null);
+      setError(result.error);
+      return;
+    }
+
+    // Success: clear the form so a second press can't double-add,
+    // and confirm that reminders are armed.
+    setError(null);
+    setTypeSlug("mmc");
+    setIssueDate("");
+    setExpirationOverride("");
+    setFlash(result.success);
+    if (flashTimer.current) clearTimeout(flashTimer.current);
+    flashTimer.current = setTimeout(() => setFlash(null), 6000);
+  }
+
   return (
     <form
-      action={addCredential}
+      action={handleAction}
       className="space-y-4 rounded-xl border border-slate-800 bg-slate-900 p-5"
     >
       <h2 className="font-semibold text-white">Add a license</h2>
+
+      {flash && (
+        <p className="rounded-md bg-emerald-950 px-3 py-2 text-sm text-emerald-300">
+          ✓ {flash}
+        </p>
+      )}
+      {error && (
+        <p className="rounded-md bg-red-950 px-3 py-2 text-sm text-red-300">{error}</p>
+      )}
 
       <label className="block text-sm text-slate-300">
         Credential type
