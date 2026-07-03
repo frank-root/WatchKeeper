@@ -75,15 +75,15 @@ export async function updateSmsSettings(formData: FormData) {
   revalidatePath("/dashboard");
 }
 
-export async function deleteCredential(formData: FormData) {
+// Called directly from the client (optimistic delete), so it takes the id
+// as a plain argument instead of FormData.
+export async function deleteCredential(id: string) {
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-
-  const id = String(formData.get("id") ?? "");
 
   // RLS also enforces ownership; the user_id filter is belt-and-suspenders.
   const { error } = await supabase

@@ -1,26 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { daysUntil, expiryStatus, type ExpiryStatus } from "@/lib/credentials";
 import { signout } from "@/app/auth/actions";
-import { deleteCredential } from "./actions";
 import { AddCredentialForm } from "./add-credential-form";
+import { CredentialList, type CredentialRow } from "./credential-list";
 import { SmsSettingsForm } from "./sms-settings-form";
-
-type CredentialRow = {
-  id: string;
-  credential_type: string;
-  name: string;
-  issue_date: string | null;
-  expiration_date: string | null;
-};
-
-const STATUS_STYLES: Record<ExpiryStatus, { label: string; className: string }> = {
-  expired: { label: "EXPIRED", className: "bg-red-950 text-red-300 border-red-800" },
-  critical: { label: "≤ 30 days", className: "bg-red-950 text-red-300 border-red-800" },
-  warning: { label: "≤ 90 days", className: "bg-amber-950 text-amber-300 border-amber-800" },
-  ok: { label: "current", className: "bg-emerald-950 text-emerald-300 border-emerald-800" },
-  ongoing: { label: "ongoing", className: "bg-slate-800 text-slate-300 border-slate-700" },
-};
 
 export default async function DashboardPage(props: {
   searchParams: Promise<{ error?: string }>;
@@ -67,57 +50,7 @@ export default async function DashboardPage(props: {
 
         <section>
           <h1 className="mb-4 text-lg font-semibold">Your credentials</h1>
-
-          {rows.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-slate-800 p-8 text-center text-slate-500">
-              Nothing tracked yet — add your first credential below and Watchkeeper will
-              email you at 90, 60, and 30 days before it expires.
-            </p>
-          ) : (
-            <ul className="space-y-2">
-              {rows.map((c) => {
-                const status = expiryStatus(c.expiration_date);
-                const style = STATUS_STYLES[status];
-                const days = c.expiration_date ? daysUntil(c.expiration_date) : null;
-
-                return (
-                  <li
-                    key={c.id}
-                    className="flex items-center justify-between gap-4 rounded-lg border border-slate-800 bg-slate-900 px-4 py-3"
-                  >
-                    <div>
-                      <p className="font-medium text-white">{c.name}</p>
-                      <p className="text-sm text-slate-400">
-                        {c.expiration_date
-                          ? days !== null && days < 0
-                            ? `Expired ${Math.abs(days)} days ago (${c.expiration_date})`
-                            : `Expires in ${days} days (${c.expiration_date})`
-                          : "No expiration — ongoing compliance"}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`rounded-full border px-3 py-1 text-xs font-medium ${style.className}`}
-                      >
-                        {style.label}
-                      </span>
-                      <form action={deleteCredential}>
-                        <input type="hidden" name="id" value={c.id} />
-                        <button
-                          type="submit"
-                          className="text-sm text-slate-500 hover:text-red-400"
-                          aria-label={`Delete ${c.name}`}
-                        >
-                          ✕
-                        </button>
-                      </form>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+          <CredentialList rows={rows} />
         </section>
 
         <AddCredentialForm />

@@ -56,7 +56,12 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-slate-900 py-8 text-center text-sm text-slate-600">
-        Watchkeeper — credential tracker for mariners
+        <p>Watchkeeper — credential tracker for mariners</p>
+        <p className="mt-2">
+          <Link href="/privacy" className="hover:text-slate-400">Privacy Policy</Link>
+          {" · "}
+          <Link href="/terms" className="hover:text-slate-400">Terms of Service</Link>
+        </p>
       </footer>
     </main>
   );

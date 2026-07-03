@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
         `Renewals can take weeks to process. Start yours now so you stay on the schedule.`,
         ``,
         `— Watchkeeper, standing watch over your credentials`,
-        `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://watchkeeper.app"}/dashboard`,
+        `${process.env.NEXT_PUBLIC_SITE_URL || "https://watchkeeper.boats"}/dashboard`,
       ].join("\n"),
     });
 

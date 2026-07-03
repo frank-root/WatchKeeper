@@ -38,7 +38,8 @@ export async function proxy(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
-  if (!user && path.startsWith("/dashboard")) {
+  // /reset-password needs the session created by the recovery-link exchange.
+  if (!user && (path.startsWith("/dashboard") || path === "/reset-password")) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
