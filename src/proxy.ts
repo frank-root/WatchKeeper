@@ -39,7 +39,19 @@ export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   // /reset-password needs the session created by the recovery-link exchange.
-  if (!user && (path.startsWith("/dashboard") || path === "/reset-password")) {
+  // Without it (expired link, or opened in a different browser), explain why
+  // rather than dumping the user at a bare login screen.
+  if (!user && path === "/reset-password") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/forgot-password";
+    url.searchParams.set(
+      "error",
+      "That reset link has expired or was opened in a different browser. Request a new one below."
+    );
+    return NextResponse.redirect(url);
+  }
+
+  if (!user && path.startsWith("/dashboard")) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

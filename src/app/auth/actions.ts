@@ -1,18 +1,13 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-// Derive the site origin from the request so reset links work on
-// localhost, previews, and watchkeeper.boats without separate config.
-async function siteOrigin(): Promise<string> {
-  const h = await headers();
-  return (
-    h.get("origin") ??
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    "https://watchkeeper.boats"
-  );
+// Fixed site origin for auth redirect URLs. Never derived from the request's
+// Origin header — trusting that would let an attacker point a victim's reset
+// link at their own domain and capture the one-time code (account takeover).
+function siteOrigin(): string {
+  return process.env.NEXT_PUBLIC_SITE_URL ?? "https://watchkeeper.boats";
 }
 
 export async function login(formData: FormData) {
@@ -65,7 +60,7 @@ export async function signout() {
 export async function requestPasswordReset(formData: FormData) {
   const supabase = await createClient();
   const email = String(formData.get("email") ?? "").trim();
-  const origin = await siteOrigin();
+  const origin = siteOrigin();
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/auth/confirm?next=/reset-password`,

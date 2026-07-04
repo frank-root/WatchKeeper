@@ -17,7 +17,7 @@ export default function TermsPage() {
       <article className="mx-auto max-w-3xl space-y-6 px-6 py-10 text-slate-300">
         <header>
           <h1 className="text-3xl font-bold text-white">Terms of Service</h1>
-          <p className="mt-2 text-sm text-slate-500">Last updated: July 2, 2026</p>
+          <p className="mt-2 text-sm text-slate-400">Last updated: July 2, 2026</p>
         </header>
 
         <section className="space-y-3">
@@ -103,10 +103,10 @@ export default function TermsPage() {
         </section>
       </article>
 
-      <footer className="border-t border-slate-900 py-8 text-center text-sm text-slate-600">
-        <Link href="/" className="hover:text-slate-400">Home</Link>
+      <footer className="border-t border-slate-900 py-8 text-center text-sm text-slate-400">
+        <Link href="/" className="underline hover:text-slate-200">Home</Link>
         {" · "}
-        <Link href="/privacy" className="hover:text-slate-400">Privacy Policy</Link>
+        <Link href="/privacy" className="underline hover:text-slate-200">Privacy Policy</Link>
       </footer>
     </main>
   );

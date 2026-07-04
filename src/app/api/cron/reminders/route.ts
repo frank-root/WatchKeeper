@@ -48,8 +48,11 @@ async function sendSms(to: string, body: string): Promise<string | null> {
 }
 
 export async function GET(request: NextRequest) {
+  // Fail closed: a missing/empty secret must never authorize this
+  // service-role endpoint (it would let `Bearer undefined` through).
+  const secret = process.env.CRON_SECRET;
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!secret || authHeader !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -99,6 +102,23 @@ export async function GET(request: NextRequest) {
 
     const window = Math.min(...unsent);
 
+    // Claim the windows FIRST by writing the sent-markers. The unique
+    // (credential_id, window_days) constraint makes this atomic: if a
+    // concurrent/overlapping run already claimed them, we get a duplicate-key
+    // error (Postgres 23505) and skip without re-sending. This is what
+    // prevents duplicate emails — we never send for a window we didn't just
+    // claim ourselves.
+    const { error: claimError } = await supabase.from("reminders_sent").insert(
+      unsent.map((w) => ({ credential_id: cred.id, window_days: w }))
+    );
+    if (claimError) {
+      // 23505 = already claimed by another run; anything else is a real error.
+      if (claimError.code !== "23505") {
+        failures.push(`${cred.id} claim: ${claimError.message}`);
+      }
+      continue;
+    }
+
     const { error: sendError } = await resend.emails.send({
       from,
       to: email,
@@ -114,13 +134,19 @@ export async function GET(request: NextRequest) {
     });
 
     if (sendError) {
+      // Un-claim so the next run retries instead of silently dropping the
+      // reminder (a missed compliance email is worse than a rare retry).
+      await supabase
+        .from("reminders_sent")
+        .delete()
+        .eq("credential_id", cred.id)
+        .in("window_days", unsent);
       failures.push(`${cred.id} (${window}d): ${sendError.message}`);
       continue;
     }
 
     // SMS rides along with the email when the user opted in. An SMS failure
-    // is logged but doesn't block the reminder from being marked sent —
-    // the email is the reminder of record.
+    // is logged but doesn't un-claim — the email is the reminder of record.
     if (cred.profiles?.sms_opt_in && cred.profiles.phone) {
       const smsError = await sendSms(
         cred.profiles.phone,
@@ -128,13 +154,6 @@ export async function GET(request: NextRequest) {
       );
       if (smsError) failures.push(`${cred.id} sms: ${smsError}`);
     }
-
-    // Mark every applicable window sent so late-added credentials don't
-    // trigger a backlog of emails on subsequent days.
-    const { error: markError } = await supabase.from("reminders_sent").insert(
-      unsent.map((w) => ({ credential_id: cred.id, window_days: w }))
-    );
-    if (markError) failures.push(`${cred.id} mark-sent: ${markError.message}`);
 
     emailed++;
   }

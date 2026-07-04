@@ -49,7 +49,7 @@ export function AddCredentialForm() {
       action={handleAction}
       className="space-y-4 rounded-xl border border-slate-800 bg-slate-900 p-5"
     >
-      <h2 className="font-semibold text-white">Add a license</h2>
+      <h2 className="font-semibold text-white">Add a credential</h2>
 
       {flash && (
         <p className="rounded-md bg-emerald-950 px-3 py-2 text-sm text-emerald-300">

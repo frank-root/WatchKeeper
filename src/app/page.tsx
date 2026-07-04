@@ -55,12 +55,12 @@ export default function Home() {
         </ul>
       </section>
 
-      <footer className="border-t border-slate-900 py-8 text-center text-sm text-slate-600">
+      <footer className="border-t border-slate-900 py-8 text-center text-sm text-slate-400">
         <p>Watchkeeper — credential tracker for mariners</p>
         <p className="mt-2">
-          <Link href="/privacy" className="hover:text-slate-400">Privacy Policy</Link>
+          <Link href="/privacy" className="underline hover:text-slate-200">Privacy Policy</Link>
           {" · "}
-          <Link href="/terms" className="hover:text-slate-400">Terms of Service</Link>
+          <Link href="/terms" className="underline hover:text-slate-200">Terms of Service</Link>
         </p>
       </footer>
     </main>

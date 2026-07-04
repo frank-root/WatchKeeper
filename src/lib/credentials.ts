@@ -24,21 +24,44 @@ export function getPreset(slug: string): CredentialPreset | undefined {
   return CREDENTIAL_PRESETS.find((p) => p.slug === slug);
 }
 
-// Dates are stored and compared as plain YYYY-MM-DD strings (Postgres `date`),
-// evaluated in UTC so server and DB agree on "today".
+// Dates are stored as plain YYYY-MM-DD strings (Postgres `date`) and compared
+// on the LOCAL calendar day. On the client this is the user's own timezone, so
+// a Pacific mariner's "today" doesn't flip to tomorrow at 5pm the way a UTC
+// comparison would. On the server (cron) the local zone is UTC, unchanged.
+
+// Parse a YYYY-MM-DD string into a local-midnight timestamp, or NaN if malformed.
+function localMidnight(dateISO: string): number {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateISO.trim());
+  if (!m) return NaN;
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime();
+}
+
 export function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  const y = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${mo}-${day}`;
 }
 
 export function addYearsISO(dateISO: string, years: number): string {
-  const d = new Date(dateISO + "T00:00:00Z");
-  d.setUTCFullYear(d.getUTCFullYear() + years);
-  return d.toISOString().slice(0, 10);
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateISO.trim());
+  if (!m) return dateISO; // malformed input — leave it for the caller to reject
+  const year = Number(m[1]) + years;
+  const month = Number(m[2]); // 1-based
+  // Clamp to the last valid day of the target month so Feb 29 + N years
+  // lands on Feb 28 rather than silently rolling to Mar 1.
+  const lastDay = new Date(year, month, 0).getDate();
+  const day = Math.min(Number(m[3]), lastDay);
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
+// Returns NaN for a malformed date so callers can distinguish "unknown" from
+// a real day count. Never silently treats bad input as valid.
 export function daysUntil(dateISO: string): number {
-  const target = new Date(dateISO + "T00:00:00Z").getTime();
-  const today = new Date(todayISO() + "T00:00:00Z").getTime();
+  const target = localMidnight(dateISO);
+  const today = localMidnight(todayISO());
+  if (Number.isNaN(target) || Number.isNaN(today)) return NaN;
   return Math.round((target - today) / 86_400_000);
 }
 
@@ -56,11 +79,20 @@ export function normalizePhone(input: string): string | null {
   return null;
 }
 
-export type ExpiryStatus = "expired" | "critical" | "warning" | "ok" | "ongoing";
+export type ExpiryStatus =
+  | "expired"
+  | "critical"
+  | "warning"
+  | "ok"
+  | "ongoing"
+  | "unknown";
 
 export function expiryStatus(expirationISO: string | null): ExpiryStatus {
   if (!expirationISO) return "ongoing";
   const days = daysUntil(expirationISO);
+  // A malformed date must never fall through to a safe-looking "ok" — that
+  // would tell a mariner their credential is current when we can't tell.
+  if (Number.isNaN(days)) return "unknown";
   if (days < 0) return "expired";
   if (days <= 30) return "critical";
   if (days <= 90) return "warning";
