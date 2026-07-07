@@ -79,12 +79,20 @@ export async function GET(request: NextRequest) {
   }
 
   const credentialIds = (expiring ?? []).map((c) => c.id);
-  const { data: alreadySent } = credentialIds.length
+  const { data: alreadySent, error: sentError } = credentialIds.length
     ? await supabase
         .from("reminders_sent")
         .select("credential_id, window_days")
         .in("credential_id", credentialIds)
-    : { data: [] };
+    : { data: [], error: null };
+
+  // Abort before claiming anything: if this lookup fails, sentSet would be
+  // empty, the atomic claim below would hit duplicates on already-sent
+  // windows, and DUE reminders would be skipped while the run reports clean.
+  // Failing here is safe — no windows are claimed yet, tomorrow retries.
+  if (sentError) {
+    return NextResponse.json({ error: sentError.message }, { status: 500 });
+  }
 
   const sentSet = new Set((alreadySent ?? []).map((r) => `${r.credential_id}:${r.window_days}`));
 

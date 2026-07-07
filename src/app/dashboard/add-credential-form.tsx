@@ -1,8 +1,25 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { CREDENTIAL_PRESETS, addYearsISO, getPreset } from "@/lib/credentials";
 import { addCredential } from "./actions";
+
+// useFormStatus only reads the surrounding <form>, so the button must be its
+// own component. Disabling while pending prevents a double-click from
+// submitting twice (nothing in the DB dedupes credentials).
+function SubmitButton({ invalidDates }: { invalidDates: boolean }) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={invalidDates || pending}
+      className="w-full rounded-md bg-sky-600 px-4 py-2 font-medium text-white hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {pending ? "Adding…" : "Add credential"}
+    </button>
+  );
+}
 
 export function AddCredentialForm() {
   const [typeSlug, setTypeSlug] = useState("mmc");
@@ -127,13 +144,7 @@ export function AddCredentialForm() {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={invalidDates}
-        className="w-full rounded-md bg-sky-600 px-4 py-2 font-medium text-white hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        Add credential
-      </button>
+      <SubmitButton invalidDates={invalidDates} />
     </form>
   );
 }

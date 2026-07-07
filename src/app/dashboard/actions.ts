@@ -155,6 +155,9 @@ export async function updateSmsSettings(formData: FormData) {
   }
 
   revalidatePath("/dashboard");
+  // Redirect to a clean URL — otherwise a stale ?error= from an earlier
+  // failed save stays visible after a successful one.
+  redirect("/dashboard");
 }
 
 // Called directly from the client (optimistic delete), so it takes the id

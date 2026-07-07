@@ -16,14 +16,16 @@ export default async function DashboardPage(props: {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: credentials } = await supabase
+  // A failed query must not fall through to the "nothing tracked yet" empty
+  // state — that reads as data loss to a user who has credentials.
+  const { data: credentials, error: credentialsError } = await supabase
     .from("credentials")
     .select("id, credential_type, name, issue_date, expiration_date")
     .order("expiration_date", { ascending: true, nullsFirst: false });
 
   const rows = (credentials ?? []) as CredentialRow[];
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("phone, sms_opt_in")
     .eq("id", user.id)
@@ -50,15 +52,28 @@ export default async function DashboardPage(props: {
 
         <section>
           <h1 className="mb-4 text-lg font-semibold">Your credentials</h1>
-          <CredentialList rows={rows} />
+          {credentialsError ? (
+            <p className="rounded-md bg-red-950 px-3 py-2 text-sm text-red-300">
+              We couldn&apos;t load your credentials just now — your data is safe.
+              Refresh to try again.
+            </p>
+          ) : (
+            <CredentialList rows={rows} />
+          )}
         </section>
 
         <AddCredentialForm />
 
-        <SmsSettingsForm
-          phone={profile?.phone ?? null}
-          smsOptIn={profile?.sms_opt_in ?? false}
-        />
+        {profileError ? (
+          <p className="rounded-md bg-red-950 px-3 py-2 text-sm text-red-300">
+            We couldn&apos;t load your SMS settings just now — refresh to try again.
+          </p>
+        ) : (
+          <SmsSettingsForm
+            phone={profile?.phone ?? null}
+            smsOptIn={profile?.sms_opt_in ?? false}
+          />
+        )}
       </div>
     </main>
   );
