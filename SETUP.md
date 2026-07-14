@@ -21,10 +21,9 @@ About 20 minutes, no code changes.
 
 1. Go to [resend.com](https://resend.com) → sign up → **API Keys** → Create.
    Copy it → `RESEND_API_KEY`.
-2. Leave `RESEND_FROM` as `Watchkeeper <onboarding@resend.dev>` for now — with the
-   test sender, Resend only delivers to **your own signup email**, which is perfect
-   for testing. Before real users: buy a domain, verify it in Resend, and change
-   `RESEND_FROM`.
+2. Domain verified: `watchkeeper.boats` is set up in Resend (2026-07-06).
+   `RESEND_FROM=Watchkeeper <reminders@watchkeeper.boats>` is live in Vercel.
+   Update your local `.env.local` to match if running locally.
 
 ## 3. Local environment
 
