@@ -4,43 +4,52 @@ import { SiteNav, SiteFooter, SkipToContent } from "@/components/site-chrome";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
+    <main className="maritime-page min-h-screen text-[#143141]">
       <SkipToContent />
       <SiteNav current="home" />
 
       <div id="main-content" tabIndex={-1}>
-        <section className="mx-auto max-w-3xl px-6 py-24 text-center sm:py-32">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-400">
-            For working mariners
-          </p>
-          <h1 className="mt-4 text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-            Credential tracker for mariners
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-400 sm:text-xl">
-            An expired MMC or medical cert means you&apos;re off the schedule. Watchkeeper stands
-            watch over your credentials and emails you at 90, 60, and 30 days before anything
-            lapses — so you never find out at the terminal.
-          </p>
-          <Link
-            href="/signup"
-            className="mt-10 inline-flex items-center justify-center rounded-lg bg-sky-600 px-7 py-3.5 text-base font-semibold text-white shadow-sm shadow-sky-950/50 transition-colors duration-200 hover:bg-sky-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-          >
-            Track your credentials — free
-          </Link>
+        <section className="border-b border-[#c9d6d2] bg-[#f7fbf9]">
+          <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+            <p className="text-sm font-black uppercase tracking-[0.12em] text-[#007f68]">
+              For working mariners
+            </p>
+            <h1 className="mt-4 max-w-4xl text-5xl font-black leading-[1.02] tracking-tight text-[#050f18] sm:text-6xl lg:text-7xl">
+              Credential tracker for mariners
+            </h1>
+          </div>
+          <div className="maritime-photo" aria-hidden="true" />
+          <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1.35fr_0.65fr] lg:items-start lg:py-10">
+            <p className="max-w-3xl text-xl font-medium leading-relaxed text-[#2e4b56]">
+              An expired MMC or medical cert means you&apos;re off the schedule. Watchkeeper stands
+              watch over your credentials and emails you at 90, 60, and 30 days before anything
+              lapses — so you never find out at the terminal.
+            </p>
+            <div className="lg:text-right">
+              <Link
+                href="/signup"
+                className="inline-flex items-center justify-center rounded-sm bg-[#0088a8] px-7 py-3.5 text-base font-black text-white shadow-sm transition-colors duration-200 hover:bg-[#006f8b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#93c01f] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7fbf9]"
+              >
+                Track your credentials — free
+              </Link>
+            </div>
+          </div>
         </section>
 
-        <section className="mx-auto max-w-4xl px-6 pb-24 sm:pb-32">
-          <h2 className="text-center text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-            Built for the credentials you actually hold
-          </h2>
-          <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+          <div className="maritime-panel border-l-8 border-l-[#007f68] p-5 sm:p-7">
+            <h2 className="text-2xl font-black tracking-tight text-[#050f18]">
+              Built for the credentials you actually hold
+            </h2>
+          </div>
+          <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {CREDENTIAL_PRESETS.filter((p) => p.slug !== "custom").map((p) => (
               <li
                 key={p.slug}
-                className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/60 px-5 py-4 text-sm text-slate-300 transition-colors hover:border-slate-700 hover:bg-slate-900"
+                className="maritime-panel flex min-h-28 flex-col justify-between border-t-4 border-t-[#93c01f] p-5 text-sm transition-colors hover:border-[#8fb2ad] hover:bg-white"
               >
-                <span className="font-medium text-slate-200">{p.name}</span>
-                <span className="text-slate-500">
+                <span className="text-lg font-black leading-snug text-[#143141]">{p.name}</span>
+                <span className="mt-4 font-semibold text-[#557077]">
                   {p.renewalYears ? `${p.renewalYears}-year renewal` : "ongoing"}
                 </span>
               </li>
