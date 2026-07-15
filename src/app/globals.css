@@ -25,10 +25,6 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-input[type="date"] {
-  padding-right: 2.75rem;
-}
-
 input[type="date"]::-webkit-calendar-picker-indicator {
   width: 1.25rem;
   height: 1.25rem;
