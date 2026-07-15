@@ -1,19 +1,14 @@
-import { SiteNav, SiteFooter } from "@/components/site-chrome";
+import { SiteNav, SiteFooter, SkipToContent } from "@/components/site-chrome";
 
 export const metadata = { title: "Terms of Service — Watchkeeper" };
 
 export default function TermsPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-6 focus:top-4 focus:z-20 focus:rounded-md focus:bg-sky-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
-      >
-        Skip to content
-      </a>
+      <SkipToContent />
       <SiteNav current="terms" />
 
-      <article id="main-content" className="mx-auto max-w-3xl space-y-10 px-6 py-16 text-slate-300 sm:py-20">
+      <article id="main-content" tabIndex={-1} className="mx-auto max-w-3xl space-y-10 px-6 py-16 text-slate-300 sm:py-20">
         <header className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Terms of Service</h1>
           <p className="text-sm text-slate-500">Last updated: July 2, 2026</p>

@@ -1,19 +1,14 @@
 import Link from "next/link";
 import { CREDENTIAL_PRESETS } from "@/lib/credentials";
-import { SiteNav, SiteFooter } from "@/components/site-chrome";
+import { SiteNav, SiteFooter, SkipToContent } from "@/components/site-chrome";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-6 focus:top-4 focus:z-20 focus:rounded-md focus:bg-sky-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
-      >
-        Skip to content
-      </a>
+      <SkipToContent />
       <SiteNav current="home" />
 
-      <div id="main-content">
+      <div id="main-content" tabIndex={-1}>
         <section className="mx-auto max-w-3xl px-6 py-24 text-center sm:py-32">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-400">
             For working mariners

@@ -5,6 +5,17 @@ export type PublicPage = "home" | "our-story" | "privacy" | "terms";
 const linkStyles =
   "rounded-md px-2 py-1 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400";
 
+export function SkipToContent() {
+  return (
+    <a
+      href="#main-content"
+      className="sr-only focus:not-sr-only focus:absolute focus:left-6 focus:top-4 focus:z-20 focus:rounded-md focus:bg-sky-600 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white"
+    >
+      Skip to content
+    </a>
+  );
+}
+
 export function SiteNav({ current }: { current: PublicPage }) {
   return (
     <header className="sticky top-0 z-10 border-b border-white/5 bg-slate-950/80 backdrop-blur">
